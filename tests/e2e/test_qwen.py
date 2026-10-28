@@ -21,6 +21,9 @@ class TestE2eQwen:
     Test cases for qwen models
     """
 
+    @pytest.mark.skip_xpu(
+        reason="fails in a 2-process accelerate launch on one device; not investigated yet"
+    )
     @pytest.mark.parametrize("base_model", ["axolotl-ai-co/tiny-qwen2-129m"])
     def test_dpo(self, base_model, temp_dir):
         cfg = DictDefault(

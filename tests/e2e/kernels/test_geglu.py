@@ -8,6 +8,10 @@ pytest.importorskip("triton")
 
 from axolotl.kernels.geglu import geglu_backward, geglu_forward
 
+pytestmark = pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
+
 
 def test_geglu_forward_shape():
     """Test that GEGLU forward pass preserves expected shapes."""

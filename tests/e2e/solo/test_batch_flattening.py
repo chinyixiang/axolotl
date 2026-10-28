@@ -12,6 +12,7 @@ Run: CUDA_VISIBLE_DEVICES=1 python test_batch_flattening.py
 import types
 from unittest.mock import MagicMock
 
+import pytest
 import torch
 from transformers import AutoModelForCausalLM
 
@@ -20,7 +21,10 @@ from axolotl.core.trainers.grpo.async_trainer import AsyncGRPOTrainer
 
 from ..utils import requires_flash_attn
 
-pytestmark = requires_flash_attn
+pytestmark = [
+    requires_flash_attn,
+    pytest.mark.skip_xpu(reason='the test runs on device="cuda"'),
+]
 
 MODEL_NAME = "axolotl-ai-co/tiny-qwen3-129m"
 
