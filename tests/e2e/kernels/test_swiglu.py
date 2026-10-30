@@ -8,6 +8,10 @@ pytest.importorskip("triton")
 
 from axolotl.kernels.swiglu import swiglu_backward, swiglu_forward
 
+pytestmark = pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
+
 
 def test_swiglu_forward_shape():
     """Test that SwiGLU forward pass preserves expected shapes"""

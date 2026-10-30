@@ -22,6 +22,9 @@ def test_dequantize_null_state():
     assert torch.equal(dequantize(W, None), W)
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 @pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float32])
 def test_dequantize_matches_bnb(dtype):
     """Bit-exact vs bnb's own dequant for every supported output dtype. fp32 previously
@@ -39,6 +42,9 @@ def test_dequantize_matches_bnb(dtype):
     torch.testing.assert_close(result_t, expected.t())
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_dequantize_non_nested():
     """Single-quant (compress_statistics=False) falls back to bnb wrapper."""
     shape = (128, 64)
@@ -47,6 +53,9 @@ def test_dequantize_non_nested():
     assert result.shape == shape
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_dequantize_torch_compile_nested():
     """NF4 double-quant under torch.compile (the QLoRA hot path)."""
     shape = (128, 64)
@@ -60,6 +69,9 @@ def test_dequantize_torch_compile_nested():
     torch.testing.assert_close(compiled, eager)
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_dequantize_torch_compile_non_nested():
     """torch.compile also works for the single-quant fallback path."""
     shape = (128, 64)

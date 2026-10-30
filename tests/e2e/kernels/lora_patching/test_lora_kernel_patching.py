@@ -136,6 +136,9 @@ def test_attention_patching_rejects_mla():
     delattr(attention_cls, "_original_forward")
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_swiglu_mlp_integration(small_llama_model):
     """Test SwiGLU activation in LoRA MLP context."""
     peft_config = get_peft_config(
@@ -256,6 +259,9 @@ def test_kernel_patch_conditions():
         )
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_kernel_config_options():
     """Test that kernel configuration options are respected."""
     # Test different configurations
@@ -354,6 +360,9 @@ def get_test_inputs(model, seq_length=20):
     )
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 @pytest.mark.parametrize("model_config", MODEL_CONFIGS)
 def test_model_architecture(model_config):
     """Test LoRA kernel patches across different model architectures."""
@@ -649,6 +658,9 @@ def _run_gdn_proj(proj, fused, in_features=256, seed=0):
     return out.detach().float(), grad
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_linear_matches_peft_forward_and_grad():
     """Fused path matches the peft module forward and grad to bf16 float noise."""
     proj = _wrapped_gdn_proj()
@@ -659,6 +671,9 @@ def test_apply_lora_linear_matches_peft_forward_and_grad():
     assert _gdn_rel_l2(grad_fused, grad_ref) < 1e-3
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_linear_matches_peft_with_dora():
     """The DoRA branch (magnitude scaling) routes correctly through LoRA_O."""
     proj = _wrapped_gdn_proj(use_dora=True)
@@ -739,6 +754,9 @@ def _run_gdn_block(block, fused, targets, in_features=256, seed=0):
     return {k: v.detach().float() for k, v in outs.items()}, grad_x, grad_a
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 @pytest.mark.parametrize(
     "targets",
     [
@@ -762,6 +780,9 @@ def test_apply_lora_gdn_in_proj_matches_peft(targets):
         assert _gdn_rel_l2(ga_fused[name], ga_ref[name]) < 5e-3
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_gdn_in_proj_matches_peft_with_dora():
     """DoRA magnitude scaling routes correctly through the fused in-projection."""
     targets = ("in_proj_qkv", "in_proj_b")
@@ -810,6 +831,9 @@ def _wrapped_gdn_block_nf4(targets, in_features=256, base_dtype=torch.bfloat16):
     return block
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 @pytest.mark.parametrize("base_dtype", [torch.bfloat16, torch.float32])
 def test_apply_lora_gdn_in_proj_matches_peft_nf4(base_dtype):
     """QLoRA (NF4 4-bit base, W_quant dequant path) fused in-projection matches peft for
@@ -910,6 +934,9 @@ def _gdn_in_proj_grads(block, names, targets, X, reference, mask=None):
     return grad_x, grad_a, grad_b
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_gdn_in_proj_backward_under_dropout():
     """Gradient correctness on the ``lora_dropout > 0`` backward path (saved ``X_drop`` +
     ``grad_X_drop`` accumulation), which the dropout=0 parity tests never exercise.
@@ -938,6 +965,9 @@ def test_apply_lora_gdn_in_proj_backward_under_dropout():
         assert _gdn_rel_l2(gb_fused[name], gb_ref[name]) < 1e-4
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_gdn_in_proj_dora_backward_under_dropout():
     """Self-consistency of the fused GDN DoRA + ``lora_dropout>0`` path: matches the kernel's
     intended math (base undropped, LoRA dropped, magnitude-scaled), including the ``d_mag``
@@ -1046,6 +1076,9 @@ def _build_qwen3_5_gdn_peft_model(target_modules):
     return PeftModelForCausalLM(model, peft_config).to("cuda")
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_kernel_patches_wires_gdn_layer():
     """apply_lora_kernel_patches attaches the fused in-proj + out_proj methods onto a
     peft-wrapped GatedDeltaNet layer, and they match the unpatched peft projections."""
@@ -1081,6 +1114,9 @@ def test_apply_lora_kernel_patches_wires_gdn_layer():
         )
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 def test_apply_lora_kernel_patches_skips_gdn_without_adapters():
     """No in-projection adapter -> no fused method attached (model left untouched)."""
     model = _build_qwen3_5_gdn_peft_model(["out_proj"])
@@ -1093,6 +1129,9 @@ def test_apply_lora_kernel_patches_skips_gdn_without_adapters():
     assert hasattr(linear_attn, "apply_out_proj")  # out_proj still routed
 
 
+@pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
 @pytest.mark.parametrize(
     "lora_qkv_kernel, lora_o_kernel, in_proj_patched, out_proj_patched",
     [

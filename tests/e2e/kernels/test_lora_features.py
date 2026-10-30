@@ -26,6 +26,10 @@ from axolotl.monkeypatch.lora_kernels import (
 )
 from axolotl.utils.dict import DictDefault
 
+pytestmark = pytest.mark.skip_xpu(
+    reason='runs on device="cuda"; the LoRA Triton kernels are CUDA-only today'
+)
+
 MODEL_NAME = "axolotl-ai-co/tiny-qwen3-129m"
 DEVICE = "cuda"
 DTYPE = torch.bfloat16
