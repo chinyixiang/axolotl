@@ -15,7 +15,7 @@ env:
 jobs:
   xpu-e2e:
     if: >-
-      github.repository == 'axolotl-ai-cloud/axolotl' &&
+      github.repository == 'chinyixiang/axolotl' &&
       (github.event_name == 'workflow_dispatch' ||
        (!github.event.pull_request.draft && github.event.label.name == 'run-xpu-tests'))
     concurrency:
