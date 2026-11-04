@@ -19,7 +19,7 @@ uv pip install packaging==26.0 setuptools==78.1.1
 # no build isolation, because isolated builds (deepspeed) cannot resolve the +xpu torch from PyPI
 TORCH_PIN="torch==$(python -c 'import torch; print(torch.__version__)')"
 uv pip install --no-build-isolation --overrides cicd/xpu-overrides.txt -e . "$TORCH_PIN" \
-    "deepspeed>=0.18.6,<0.20.0" --group test blobfile tiktoken
+    "deepspeed>=0.18.6,<0.20.0" --group test blobfile tiktoken  pytest-timeout
 
 python - <<'XPU_ENV'
 import importlib.metadata as md
