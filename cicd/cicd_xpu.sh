@@ -3,6 +3,10 @@
 # marked skip_xpu. Run from the repository root in an environment from cicd/setup_xpu_env.sh.
 set -euo pipefail
 
+# one card only (the first the runner exposes): with several visible, tests mix tensors across xpu:0 and xpu:N
+ZE_AFFINITY_MASK="${ZE_AFFINITY_MASK:-0}"
+export ZE_AFFINITY_MASK="${ZE_AFFINITY_MASK%%,*}"
+
 python - <<'XPU_ENV'
 import os
 
@@ -11,7 +15,8 @@ import torch
 assert torch.xpu.is_available() and not torch.cuda.is_available(), "the XPU lane needs an Intel GPU and no CUDA"
 expected = os.environ.get("PYTORCH_VERSION")
 assert not expected or expected in torch.__version__, torch.__version__
-print(f"torch {torch.__version__}: {torch.xpu.get_device_name(0)}", flush=True)
+assert torch.xpu.device_count() == 1, f"the XPU lane needs exactly one visible GPU, got {torch.xpu.device_count()}"
+print(f"torch {torch.__version__}: {torch.xpu.get_device_name(0)} (ZE_AFFINITY_MASK={os.environ['ZE_AFFINITY_MASK']})", flush=True)
 XPU_ENV
 
 # a self-hosted runner keeps its own HF_HOME, so the CI cache archive is not fetched
@@ -20,7 +25,7 @@ python -c "from kernels import get_kernel; get_kernel(\"kernels-community/flash-
 status=0
 run() {
   local rc=0
-  pytest -v --durations=10 --maxfail=10 "$@" || rc=$?
+  pytest -v --durations=10 --maxfail=10 --timeout=900 --timeout-method=thread "$@" || rc=$?
   # exit 5: every selected test in the block is marked skip_xpu
   if [ "$rc" -ne 0 ] && [ "$rc" -ne 5 ]; then
     status=$rc
