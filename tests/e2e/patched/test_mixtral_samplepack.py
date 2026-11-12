@@ -18,7 +18,12 @@ from ..utils import (
     with_temp_dir,
 )
 
-pytestmark = requires_flash_attn
+pytestmark = [
+    requires_flash_attn,
+    pytest.mark.skip_xpu(
+        reason="flash-attn2 varlen backward hits a GPU memory fault (DEVICE_LOST) on XPU"
+    ),
+]
 
 
 class TestMixtral(unittest.TestCase):
@@ -26,9 +31,6 @@ class TestMixtral(unittest.TestCase):
     Test case for Llama models using LoRA
     """
 
-    @pytest.mark.skip_xpu(
-        reason="flash-attn2 varlen backward hits a GPU memory fault (DEVICE_LOST) on XPU"
-    )
     @with_temp_dir
     def test_qlora(self, temp_dir):
         cfg = DictDefault(
