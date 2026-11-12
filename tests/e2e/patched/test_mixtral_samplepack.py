@@ -4,6 +4,8 @@ E2E tests for mixtral
 
 import unittest
 
+import pytest
+
 from axolotl.common.datasets import load_datasets
 from axolotl.train import train
 from axolotl.utils.config import normalize_config, validate_config
@@ -24,6 +26,9 @@ class TestMixtral(unittest.TestCase):
     Test case for Llama models using LoRA
     """
 
+    @pytest.mark.skip_xpu(
+        reason="flash-attn2 varlen backward hits a GPU memory fault (DEVICE_LOST) on XPU"
+    )
     @with_temp_dir
     def test_qlora(self, temp_dir):
         cfg = DictDefault(
