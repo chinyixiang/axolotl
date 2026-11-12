@@ -1,4 +1,4 @@
-name: Intel XPU
+name: Intel GPU
 
 on:
   pull_request:
