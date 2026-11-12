@@ -36,6 +36,10 @@ import torch
 
 from tests.accelerator import DEVICE_TYPE, device_module, gpu_available
 
+pytestmark = pytest.mark.skip_xpu(
+    reason="the scattermoe Triton launch enters torch.cuda.device(), which rejects xpu devices"
+)
+
 # Failing-config constants (mirror tests/integrations/monkeypatch/
 # bench_tiled_mlp_moe.py at seq=524288, shards=16).
 _T = 32768
@@ -53,9 +57,6 @@ def _requires_cuda():
 _SCATTER2SCATTER_INT32_LIMIT = 2**31
 
 
-@pytest.mark.skip_xpu(
-    reason="the scattermoe Triton launch enters torch.cuda.device(), which rejects xpu devices"
-)
 @_requires_cuda()
 def test_scatter2scatter_below_threshold_no_overhead():
     """At shapes well below the int32 overflow boundary the auto-dispatch
@@ -118,9 +119,6 @@ def test_scatter2scatter_below_threshold_no_overhead():
     )
 
 
-@pytest.mark.skip_xpu(
-    reason="the scattermoe Triton launch enters torch.cuda.device(), which rejects xpu devices"
-)
 @_requires_cuda()
 def test_scatter2scatter_no_corruption_at_overflow_shape():
     """The kernel-level int64 fix must keep every output row populated
